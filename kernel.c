@@ -1,13 +1,30 @@
 #include "types.h"
 #include "keyboard.h"
 #include "system.h"
-#include <stdio.h>
 
 
 int cursorX = 0, cursorY = 0;
 const uint8 SW = 80, SH = 25,SD = 2;
 int vgaBufferSize = 0;
 char* vga = (char*)0xB8000;
+static unsigned long next = 1;
+static unsigned short seed_set = 0;
+
+int rand() {
+	next = next * 1103515245 + 12345;
+	next *= 2;
+	return (unsigned int)(next/65536) % 65536;
+}
+
+
+void srand(unsigned int seed) {
+	if (!(seed_set)) {
+		seed_set = 1;
+	}
+
+	next = seed;
+}
+
 
 int abs (int i)
 {
@@ -73,11 +90,51 @@ char* itoa(int value, char* buffer, int base)
 }
 
 
+long atoi(const char* S)
+{
+    long num = 0;
+ 
+    int i = 0;
+ 
+    // run till the end of the string is reached, or the
+    // current character is non-numeric
+    while (S[i] && (S[i] >= '0' && S[i] <= '9'))
+    {
+        num = num * 10 + (S[i] - '0');
+        i++;
+    }
+ 
+    return num;
+}
+
+
 int strlen(const char* str) {
 	int i = 0;
 
 	while (str[++i]);
 	return i;
+}
+
+unsigned short is_digit(const char* str) {
+	for (int i = 0; i < strlen(str); ++i) {
+		switch (str[i]) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				break;
+			default:
+				return 0;
+		}
+	}
+
+	return 1;
 }
 
 
@@ -124,35 +181,6 @@ void kprint(const char* str, unsigned short oneline) {
 }
 
 
-void disco() {
-	vga = (char*)0xB8000;
-	while (1) {
-		for (int i = 0; i < 20000; ++i) {
-			*vga = 0x0e;
-			++vga;
-			*vga = 4;
-			++vga;
-		}
-
-
-		for (int i = 0; i < 20000; ++i) {
-			*vga = 0x0e;
-			++vga;
-			*vga = 2;
-			++vga;
-		}
-
-		for (int i = 0; i < 20000; ++i) {
-			*vga = 0x0e;
-			++vga;
-			*vga = 1;
-			++vga;
-		}
-	
-	}
-}
-
-
 void kclear() {
 	vga = (char*)0xB8000;
 	for (int i = 0; i < 599 + vgaBufferSize; ++i) {
@@ -180,6 +208,8 @@ void kmain() {
 	unsigned short bufferIdx = 0;
 	unsigned short bufferSize = 0;
 	char buffer[5];
+
+	unsigned int skip = 1;
 	
 	while (1) {
 		const char* key = readStr();
@@ -206,7 +236,87 @@ void kmain() {
 				outportb(0x64, 0xFE);
 			} else if (strcmp(buffer, "1")) {
 				kclear();
-				disco();
+				cursorY = 1;
+				cursorX = 6;
+				updateCursor();
+				kprint("Press ESC to quit.", 0);
+				kprint("seed> ", 1);
+				unsigned short skip = 0;
+
+				while (1) {
+					const char* seedstr = readStr();
+					if (bufferSize < 7) {
+						kprint(seedstr, 1);
+						buffer[bufferIdx] = *seedstr;
+						++bufferIdx;
+						++bufferSize;
+						++cursorX;
+						updateCursor();
+					}
+
+					if (strcmp(seedstr, "Enter")) {
+						kclear();
+						bufferIdx = 0;
+						bufferSize = 0;
+						cursorX = 15;
+						cursorY = 2;
+						updateCursor();
+						greet();
+						break;
+					} else if (strcmp(seedstr, "ESC")) {
+						kclear();
+
+						bufferIdx = 0;
+						bufferSize = 0;
+
+						cursorY = 2;
+						cursorX = 15;
+						updateCursor();
+
+						greet();
+						skip = 1;
+						break;
+					}
+				}
+
+				if (skip) {
+					continue;
+				}
+
+				srand(atoi(buffer));
+				bufferIdx = 0;
+				bufferSize = 0;
+				cursorX = 15;
+				updateCursor();
+				kclear();
+				greet();
+			} else if (strcmp(buffer, "2")) {
+				kclear();
+				kprint("Press ESC to quit.", 0);
+				cursorX = 0;
+				updateCursor();
+				if (seed_set) {
+					kprint("rand => ", 1);
+					char dummyBuf[255];
+					kprint(itoa(rand(), dummyBuf, 10), 0);
+				} else {
+					kprint("*** SEED NOT SET ***", 0);
+				}
+
+				while (1) {
+					const char* key = readStr();
+
+					if (strcmp(key, "ESC")) {
+						kclear();
+						bufferIdx = 0;
+						bufferSize = 0;
+						cursorX = 15;
+						cursorY = 2;
+						updateCursor();
+						greet();
+						break;
+					}
+				}
 			}
 		} else {
 			if (bufferSize < 4) {

@@ -14,4 +14,10 @@ typedef signed long long int64;
 typedef unsigned long long uint64;
 
 typedef char* string; 
+
+
+#define low_16(address) (uint16)((address) & 0xFFFF)
+#define high_16(address) (uint16)(((address >> 16) & 0xFFFF))
+
+
 #endif
