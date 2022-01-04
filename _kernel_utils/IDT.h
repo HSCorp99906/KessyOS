@@ -21,8 +21,8 @@ typedef struct IDT_REG {
 
 #define IDT_ENTRIES 256
 
-idt_gate_t idt[IDT_ENTRIES];
-idt_register_t idt_reg;
+static idt_gate_t idt[IDT_ENTRIES];
+static idt_register_t idt_reg;
 
 
 void set_idt_gate(int n, uint32 handler);

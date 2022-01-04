@@ -41,6 +41,58 @@ const char* readStr() {
 					return "+";
 				case 28:
 					return "Enter";
+				case  30:
+					return "A";
+				case 48:
+					return "B";
+				case 46:
+					return "C";
+				case 32:
+					return "D";
+				case 18:
+					return "E";
+				case 33:
+					return "F";
+				case 34:
+					return "G";
+				case 35:
+					return "H";
+				case 23:
+					return "I";
+				case 36:
+					return "J";
+				case 37:
+					return "K";
+				case 38:
+					return "L";
+				case 50:
+					return "M";
+				case 49:
+					return "N";
+				case 24:
+					return "O";
+				case 25:
+					return "P";
+				case 16:
+					return "Q";
+				case 19:
+					return "R";
+				case 31:
+					return "S";
+				case 20:
+					return "T";
+				case 22:
+					return "U";
+				case 47:
+					return "V";
+				case 17:
+					return "W";
+				case 45:
+					return "X";
+				case 21:
+					return "Y";
+				case 44:
+					return "Z";
 			}
 		}
 	}

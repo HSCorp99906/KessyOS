@@ -1,6 +1,7 @@
 #include "types.h"
 #include "keyboard.h"
 #include "system.h"
+#include "_kernel_utils/ISR.h"
 
 
 int cursorX = 0, cursorY = 0;
@@ -200,6 +201,7 @@ void greet() {
 
 
 void kmain() {
+	isr_install();
 	greet();
 	cursorY += 2;
 	cursorX += 15;
@@ -317,6 +319,17 @@ void kmain() {
 						break;
 					}
 				}
+			} else if (strcmp(buffer, "3")) {
+				cursorX = 0;
+				cursorY = 6;
+				updateCursor();	
+				kclear();
+				kprint("Press ESC to quit.", 0);
+				kprint(" ", 0);
+				kprint(" ", 0);
+				kprint("Creator: Ian Moffett.", 0);
+				kprint(" ", 0);
+				kprint("Creator's Friends: Kizana, Skyde, Sadan, LilyScarlet, Pickle, Liquid44 & Neo9000", 0);
 			}
 		} else {
 			if (bufferSize < 4) {
