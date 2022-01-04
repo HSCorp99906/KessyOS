@@ -213,7 +213,7 @@ void kmain() {
 
 	unsigned short bufferIdx = 0;
 	unsigned short bufferSize = 0;
-	char buffer[5];
+	char buffer[20];
 
 	unsigned int skip = 1;
 	
@@ -338,7 +338,7 @@ void kmain() {
 				continue;
 			}
 		} else {
-			if (bufferSize < 10) {
+			if (bufferSize < 16) {
 				kprint(&*key, 1);
 				++cursorX;
 				updateCursor();
