@@ -4,6 +4,10 @@
 #include "_kernel_utils/ISR.h"
 
 
+void __stack_chk_fail_local() {
+}
+
+
 int cursorX = 0, cursorY = 0;
 const uint8 SW = 80, SH = 25,SD = 2;
 int vgaBufferSize = 0;
@@ -216,7 +220,7 @@ void kmain() {
 	while (1) {
 		const char* key = readStr();
 
-		if (strcmp(key, "ESC")) {
+		if (strcmp(key, "ESC") && !(strcmp(key, "E"))) {
 			kclear();
 			cursorX = 15;
 			cursorY = 2;
@@ -224,19 +228,11 @@ void kmain() {
 			bufferIdx = 0;
 			bufferSize = 0;
 			greet();
-		} else if (strcmp(key, "Enter")) {
-			unsigned short isequalZero = 0;
-
-			for (int i = 0; i < strlen(buffer); ++i) {
-				if (buffer[i] == '0') {
-					isequalZero = 1;
-				}
-			}
-
-			if (isequalZero) {
+		} else if (strcmp(key, "Enter") && !(strcmp(key, "E"))) {	
+			if (strcmp(buffer, "RESTART")) {
 				asm("cli");
 				outportb(0x64, 0xFE);
-			} else if (strcmp(buffer, "1")) {
+			} else if (strcmp(buffer, "SEED")) {
 				kclear();
 				cursorY = 1;
 				cursorX = 6;
@@ -292,7 +288,7 @@ void kmain() {
 				updateCursor();
 				kclear();
 				greet();
-			} else if (strcmp(buffer, "2")) {
+			} else if (strcmp(buffer, "RAND")) {
 				kclear();
 				kprint("Press ESC to quit.", 0);
 				cursorX = 0;
@@ -319,7 +315,7 @@ void kmain() {
 						break;
 					}
 				}
-			} else if (strcmp(buffer, "3")) {
+			} else if (strcmp(buffer, "CREDITS")) {
 				cursorX = 0;
 				cursorY = 6;
 				updateCursor();	
@@ -330,9 +326,19 @@ void kmain() {
 				kprint("Creator: Ian Moffett.", 0);
 				kprint(" ", 0);
 				kprint("Creator's Friends: Kizana, Skyde, Sadan, LilyScarlet, Pickle, Liquid44 & Neo9000", 0);
+			} else {
+				kclear();
+				kprint("**Invalid Command.**", 0);
+				greet();
+				cursorX = 15;
+				cursorY = 3;
+				bufferIdx = 0;
+				bufferSize = 0;
+				updateCursor();
+				continue;
 			}
 		} else {
-			if (bufferSize < 4) {
+			if (bufferSize < 10) {
 				kprint(&*key, 1);
 				++cursorX;
 				updateCursor();
