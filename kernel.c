@@ -1,12 +1,76 @@
 #include "types.h"
 #include "keyboard.h"
 #include "system.h"
+#include <stdio.h>
 
 
 int cursorX = 0, cursorY = 0;
 const uint8 SW = 80, SH = 25,SD = 2;
 int vgaBufferSize = 0;
 char* vga = (char*)0xB8000;
+
+int abs (int i)
+{
+  return i < 0 ? -i : i;
+}
+
+void swap(char *x, char *y) {
+    char t = *x; *x = *y; *y = t;
+}
+ 
+// Function to reverse `buffer[i…j]`
+char* reverse(char *buffer, int i, int j)
+{
+    while (i < j) {
+        swap(&buffer[i++], &buffer[j--]);
+    }
+ 
+    return buffer;
+}
+ 
+// Iterative function to implement `itoa()` function in C
+char* itoa(int value, char* buffer, int base)
+{
+    // invalid input
+    if (base < 2 || base > 32) {
+        return buffer;
+    }
+ 
+    // consider the absolute value of the number
+    int n = abs(value);
+ 
+    int i = 0;
+    while (n)
+    {
+        int r = n % base;
+ 
+        if (r >= 10) {
+            buffer[i++] = 65 + (r - 10);
+        }
+        else {
+            buffer[i++] = 48 + r;
+        }
+ 
+        n = n / base;
+    }
+ 
+    // if the number is 0
+    if (i == 0) {
+        buffer[i++] = '0';
+    }
+ 
+    // If the base is 10 and the value is negative, the resulting string
+    // is preceded with a minus sign (-)
+    // With any other base, value is always considered unsigned
+    if (value < 0 && base == 10) {
+        buffer[i++] = '-';
+    }
+ 
+    buffer[i] = '\0'; // null terminate string
+ 
+    // reverse the string and return it
+    return reverse(buffer, 0, i - 1);
+}
 
 
 int strlen(const char* str) {
@@ -60,6 +124,35 @@ void kprint(const char* str, unsigned short oneline) {
 }
 
 
+void disco() {
+	vga = (char*)0xB8000;
+	while (1) {
+		for (int i = 0; i < 20000; ++i) {
+			*vga = 0x0e;
+			++vga;
+			*vga = 4;
+			++vga;
+		}
+
+
+		for (int i = 0; i < 20000; ++i) {
+			*vga = 0x0e;
+			++vga;
+			*vga = 2;
+			++vga;
+		}
+
+		for (int i = 0; i < 20000; ++i) {
+			*vga = 0x0e;
+			++vga;
+			*vga = 1;
+			++vga;
+		}
+	
+	}
+}
+
+
 void kclear() {
 	vga = (char*)0xB8000;
 	for (int i = 0; i < 599 + vgaBufferSize; ++i) {
@@ -72,7 +165,7 @@ void kclear() {
 
 
 void greet() {
-	kprint("Hello from the kernel!", 0);
+	kprint("Hello from the kernel.", 0);
 	kprint("Press ESC to reset screen.", 0);
 	kprint("root@kessOS~$ ", 1);
 }
@@ -100,17 +193,20 @@ void kmain() {
 			bufferSize = 0;
 			greet();
 		} else if (strcmp(key, "Enter")) {
-			unsigned short isequal = 0;
+			unsigned short isequalZero = 0;
 
 			for (int i = 0; i < strlen(buffer); ++i) {
 				if (buffer[i] == '0') {
-					isequal = 1;
+					isequalZero = 1;
 				}
 			}
 
-			if (isequal) {
+			if (isequalZero) {
 				asm("cli");
 				outportb(0x64, 0xFE);
+			} else if (strcmp(buffer, "1")) {
+				kclear();
+				disco();
 			}
 		} else {
 			if (bufferSize < 4) {
@@ -120,6 +216,7 @@ void kmain() {
 				buffer[bufferIdx] = *key;
 				++bufferIdx;
 				++bufferSize;
+				buffer[bufferIdx] = '\0';
 			}
 	   }
 }

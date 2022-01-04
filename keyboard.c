@@ -31,6 +31,14 @@ const char* readStr() {
 					return "9";
 				case 11:
 					return "0";
+				case 12:
+					return "-";
+				case 53:
+					return "/";
+				case 55:
+					return "*";
+				case 13:
+					return "+";
 				case 28:
 					return "Enter";
 			}
